@@ -1,4 +1,4 @@
-# $Id: Makefile.PL,v 1.2 2002/12/11 22:48:15 comdog Exp $
+# $Id: Makefile.PL,v 1.4 2002/12/13 18:31:13 comdog Exp $
 use ExtUtils::MakeMaker;
 
 sub ExtUtils::MM_Any::test_via_harness
@@ -12,16 +12,17 @@ sub ExtUtils::MM_Any::test_via_harness
 
 WriteMakefile(
     'NAME'		    => 'journals',
-	'VERSION'       => '0.7',
+	'VERSION'       => '0.8',
 	
 	'EXE_FILES' =>  [ 'journals' ],
 	    	
 	'PREREQ_PM' => {
 		'File::Find::Rule'  => '0',
 		'SOAP::Lite'        => '0',
-		'Test::Manifest'    => '0',
+		'Test::File'        => '0',
 		'Test::More'        => '0',
-		'Test::Pod'         => '0',
+		'Test::Manifest'    => '0.91',
+		'Test::Pod'         => '0.90',
 		'Text::Template'    => '0',
 		},
 		
