@@ -1,0 +1,25 @@
+{
+use HTML::Entities;
+use Text::Autoformat;
+ 
+$entry{body} =~ s=</?(p|blockquote)/?>=\n\n=gi;
+$entry{body} =~ s=</?tt>==gi;
+$entry{body} =~ s|</?i>|__|gi;
+$entry{body} =~ s|</?b>|*|gi;
+ 
+decode_entities( $entry{body} );
+ 
+my $text = autoformat( $entry{body}, { right => 73, all => 1 } );
+ 
+$text =~ s|\n{3,}|\n\n|gi;
+$text =~ s=^\n+|\n+$==gi;
+ 
+"
+======================================================================
+$entry{nickname}: $entry{subject}
+$entry{date}, $entry{id}
+----------------------------------------------------------------------
+ 
+$text
+"
+} 

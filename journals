@@ -1,0 +1,120 @@
+#!/usr/bin/perl -w
+use strict;
+
+use File::Spec::Functions;
+use SOAP::Lite;
+use Text::Template;
+
+=head1 NAME
+
+journals - read use.perl journals from a terminal
+
+=head1 SYNOPSIS
+
+% journals
+
+=head1 DESCRIPTION
+
+Read use.perl journals from the command line.
+
+=head2 ENVIRONMENT
+
+=over 4
+
+=item HOME
+
+The script looks in your home directory for certain files, including
+the template and counter files.
+
+=item PAGER
+
+This script attempts to use your pager program when it writes to the
+terminal.
+
+=item USE_PERL_JOURNAL_DEBUG
+
+If this environment variable has a true value, the script issues
+debugging messages.
+
+=item USE_PERL_JOURNAL_TEMPLATE
+
+The script attempts to use this Text::Template file to present the
+entries.
+
+=item USE_PERL_JOURNAL_COUNTER
+
+The script stores the last read journal in this counter file.
+
+=item USE_PERL_JOURNAL_START
+
+If this environment variable has a value, the script tries to start
+at that journal entry.
+
+=back
+
+=head1 SOURCE AVAILABILITY
+
+This source is part of a SourceForge project which always has the
+latest sources in CVS, as well as all of the previous releases.
+
+	https://sourceforge.net/projects/brian-d-foy/
+
+If, for some reason, I disappear from the world, one of the other
+members of the project can shepherd this module appropriately.
+
+=head1 AUTHOR
+
+brian d foy, E<lt>bdfoy@cpan.orgE<gt>
+
+=head1 COPYRIGHT
+
+Copyright 2002, brian d foy, All rights reserved.
+
+You may use this script under the same terms as Perl itself.
+
+=cut
+
+my $Debug       = $ENV{USE_PERL_JOURNAL_DEBUG}    || 0;
+my $Template    = $ENV{USE_PERL_JOURNAL_TEMPLATE} ||
+    catfile( $ENV{HOME}, ".journal.tmpl" );
+my $Counter     = $ENV{USE_PERL_JOURNAL_COUNTER}  ||
+    catfile( $ENV{HOME}, ".journals" );
+
+die "Could not open template\n" unless -r $Template;
+
+my $Pager = $ENV{PAGER} ||
+    do { chomp( my $m = `which more` ); $m };
+
+die "Can't execute pager [$Pager]\n" unless -x $Pager;
+
+$|++;
+
+open OUT, "| $Pager";
+
+my $host        = 'use.perl.org';
+my $uri         = "http://$host/Slash/Journal/SOAP";
+my $proxy       = "http://$host/journal.pl";
+
+dbmopen my %hash, $Counter, 0640 or die $!;
+
+my $id          = $ENV{USE_PERL_JOURNAL_START} || $hash{next_id}
+    || die "$0: I need to know where to start!";
+my $start_id    = $id;
+
+print STDERR "$0: Starting at ID [$id]\n" if $Debug;
+
+my $journal  = SOAP::Lite->uri( $uri )->proxy( $proxy );
+my $template = Text::Template->new( SOURCE => $Template );
+
+while( my $hash  = $journal->get_entry( $id )->result )
+    {
+    print OUT $template->fill_in( HASH => { entry => $hash } );
+
+    $hash{next_id} = ++$id;
+    }
+
+close OUT;
+
+print "No recent journals\n" if $id == $start_id;
+
+print STDERR "$0: Ending at ID [$id]\n" if $Debug;

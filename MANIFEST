@@ -1,0 +1,8 @@
+MANIFEST			This list of files
+MANIFEST.SKIP
+Makefile.PL
+_journal.tmpl
+journals
+t/compile.t
+t/pod.t
+t/test_manifest

@@ -1,0 +1,7 @@
+# $Id: MANIFEST.SKIP,v 1.1 2002/11/23 19:54:03 comdog Exp $
+Makefile$
+Makefile.old
+blib
+CVS
+MANIFEST.bak
+pm_to_blib
